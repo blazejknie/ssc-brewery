@@ -14,7 +14,7 @@ class BeerControllerIT extends BaseIT{
 
     @Test
     void findBeersWithoutLogin() throws Exception {
-        mockMvc.perform(get("/beers/find").with(httpBasic("user", "password")))
+        mockMvc.perform(get("/beers/find"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("beers/findBeers"))
                 .andExpect(model().attributeExists("beer"));
