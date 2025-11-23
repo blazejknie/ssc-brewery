@@ -1,19 +1,35 @@
 package guru.sfg.brewery.config;
 
 import guru.sfg.brewery.security.CustomPasswordEncodeFactory;
+import guru.sfg.brewery.security.RestHeaderAuthFilter;
+import guru.sfg.brewery.security.RestURLParamsAuthFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
+    public RestHeaderAuthFilter restHeaderAuthFilter(AuthenticationManager authenticationManager) {
+        RestHeaderAuthFilter filter = new RestHeaderAuthFilter(new AntPathRequestMatcher("/api/**"));
+        filter.setAuthenticationManager(authenticationManager);
+        return filter;
+    }
+
+    public RestURLParamsAuthFilter restURLParamsAuthFilter(AuthenticationManager authenticationManager) {
+        RestURLParamsAuthFilter filter = new RestURLParamsAuthFilter(new AntPathRequestMatcher("api/**"));
+        filter.setAuthenticationManager(authenticationManager);
+        return filter;
+    }
     @Bean
     PasswordEncoder passwordEncoder() {
 //        return NoOpPasswordEncoder.getInstance();
@@ -28,6 +44,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
+                .addFilterBefore(
+                        restHeaderAuthFilter(authenticationManager()),
+                        UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(
+                        restURLParamsAuthFilter(authenticationManager()),
+                        RestHeaderAuthFilter.class)
+                .csrf().disable()
                 .authorizeRequests(authorized -> {
                     authorized
                             .antMatchers("/", "/webjars/**", "/login", "/resources/**")
@@ -70,7 +93,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .roles("ADMIN")
                 .and()
                 .withUser("user")
-                .password("{bcrypt15}$2a$15$vXrz0rAwocLHRf.eHahLrOonge5hz/DNhu.9rLc6MNkwD5rYj.tMq")
+                .password("{bcrypt10}$2a$10$HuROHgb7yjszurF8mcTwUOlykMDoRVyGNwW2DNtS3v4pixqmZwvri")
 //                .password("{SSHA}ycF5qsioBB5JqiWUzreuNYpLdpEHUI8Qv0cWJg==")
                 .roles("USER")
                 .and()
