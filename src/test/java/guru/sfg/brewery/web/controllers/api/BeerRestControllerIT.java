@@ -1,7 +1,8 @@
-package guru.sfg.brewery.web.controllers;
+package guru.sfg.brewery.web.controllers.api;
 
 import guru.sfg.brewery.domain.Beer;
 import guru.sfg.brewery.repositories.BeerRepository;
+import guru.sfg.brewery.web.controllers.BaseIT;
 import guru.sfg.brewery.web.model.BeerStyleEnum;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -18,29 +19,96 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
-public class BeerRestControllerIT extends BaseIT{
+public class BeerRestControllerIT extends BaseIT {
 
     @Autowired
     BeerRepository beerRepository;
 
     @Test
-    void findBeers() throws Exception {
+    void findBeersUNAUTHENTICATED() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/beer/"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void findBeersADMIN() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/beer/")
+                        .with(httpBasic("spring", "guru")))
                 .andExpect(status().isOk());
     }
 
     @Test
-    void findBeerById() throws Exception {
+    void findBeersUSER() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/beer/")
+                        .with(httpBasic("user", "password")))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void findBeersCUSTOMER() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/beer/")
+                        .with(httpBasic("scott", "tiger")))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void findBeerByIdUNAUTHENTICATED() throws Exception {
         Beer beer = beerRepository.findAll().get(0);
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/beer/" + beer.getId()))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void findBeerByIdADMIN() throws Exception {
+        Beer beer = beerRepository.findAll().get(0);
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/beer/" + beer.getId())
+                        .with(httpBasic("spring", "guru")))
                 .andExpect(status().isOk());
     }
 
     @Test
-    void findBeerByUPC() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/beerUpc/0631234200036"))
+    void findBeerByIdUSER() throws Exception {
+        Beer beer = beerRepository.findAll().get(0);
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/beer/" + beer.getId())
+                        .with(httpBasic("user", "password")))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    void findBeerByIdCUSTOMER() throws Exception {
+        Beer beer = beerRepository.findAll().get(0);
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/beer/" + beer.getId())
+                        .with(httpBasic("scott", "tiger")))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void findBeerByUpcUNAUTHENTICATED() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/beerUpc/0631234200036"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void findBeerByUpcADMIN() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/beerUpc/0631234200036")
+                        .with(httpBasic("spring", "guru")))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void findBeerByUpcUSER() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/beerUpc/0631234200036")
+                        .with(httpBasic("user", "password")))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void findBeerByUpcCUSTOMER() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/beerUpc/0631234200036")
+                        .with(httpBasic("scott", "tiger")))
+                .andExpect(status().isOk());
+    }
+
     @Nested
     @DisplayName("Delete Tests")
     public class DeleteTests {
