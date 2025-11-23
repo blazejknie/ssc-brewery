@@ -67,26 +67,26 @@ public class DefaultBreweryLoader implements CommandLineRunner {
     private void loadSecurityUserData() {
         if (authorityRepository.findAll().isEmpty() && userRepository.findAll().isEmpty()) {
             List<Authority> authorities = authorityRepository.saveAll(Arrays.asList(
-                    Authority.builder().role("ADMIN").build(),
-                    Authority.builder().role("USER").build(),
-                    Authority.builder().role("CUSTOMER").build()
+                    Authority.builder().role("ROLE_ADMIN").build(),
+                    Authority.builder().role("ROLE_USER").build(),
+                    Authority.builder().role("ROLE_CUSTOMER").build()
             ));
 
             userRepository.saveAll(Arrays.asList(
                     User.builder()
                             .username("spring")
                             .password(passwordEncoder.encode("guru"))
-                            .authority(getAuthority(authorities, "ADMIN"))
+                            .authority(getAuthority(authorities, "ROLE_ADMIN"))
                             .build(),
                     User.builder()
                             .username("user")
                             .password(passwordEncoder.encode("password"))
-                            .authority(getAuthority(authorities, "USER"))
+                            .authority(getAuthority(authorities, "ROLE_USER"))
                             .build(),
                     User.builder()
                             .username("scott")
                             .password(passwordEncoder.encode("tiger"))
-                            .authority(getAuthority(authorities, "CUSTOMER"))
+                            .authority(getAuthority(authorities, "ROLE_CUSTOMER"))
                             .build()
             ));
 
