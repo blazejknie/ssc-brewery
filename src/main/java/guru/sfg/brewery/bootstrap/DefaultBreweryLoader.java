@@ -17,14 +17,21 @@
 package guru.sfg.brewery.bootstrap;
 
 import guru.sfg.brewery.domain.*;
+import guru.sfg.brewery.domain.security.Authority;
+import guru.sfg.brewery.domain.security.User;
 import guru.sfg.brewery.repositories.*;
+import guru.sfg.brewery.repositories.security.AuthorityRepository;
+import guru.sfg.brewery.repositories.security.UserRepository;
 import guru.sfg.brewery.web.model.BeerStyleEnum;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Set;
-import java.util.UUID;
+import javax.management.relation.RoleNotFoundException;
+import java.util.*;
 
 
 /**
@@ -32,6 +39,7 @@ import java.util.UUID;
  */
 @RequiredArgsConstructor
 @Component
+@Slf4j
 public class DefaultBreweryLoader implements CommandLineRunner {
 
     public static final String TASTING_ROOM = "Tasting Room";
@@ -44,11 +52,50 @@ public class DefaultBreweryLoader implements CommandLineRunner {
     private final BeerInventoryRepository beerInventoryRepository;
     private final BeerOrderRepository beerOrderRepository;
     private final CustomerRepository customerRepository;
+    private final AuthorityRepository authorityRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) {
         loadBreweryData();
         loadCustomerData();
+        loadSecurityUserData();
+    }
+
+    @Transactional
+    private void loadSecurityUserData() {
+        if (authorityRepository.findAll().isEmpty() && userRepository.findAll().isEmpty()) {
+            List<Authority> authorities = authorityRepository.saveAll(Arrays.asList(
+                    Authority.builder().role("ADMIN").build(),
+                    Authority.builder().role("USER").build(),
+                    Authority.builder().role("CUSTOMER").build()
+            ));
+
+            userRepository.saveAll(Arrays.asList(
+                    User.builder()
+                            .username("spring")
+                            .password(passwordEncoder.encode("guru"))
+                            .authority(getAuthority(authorities, "ADMIN"))
+                            .build(),
+                    User.builder()
+                            .username("user")
+                            .password(passwordEncoder.encode("password"))
+                            .authority(getAuthority(authorities, "USER"))
+                            .build(),
+                    User.builder()
+                            .username("scott")
+                            .password(passwordEncoder.encode("tiger"))
+                            .authority(getAuthority(authorities, "CUSTOMER"))
+                            .build()
+            ));
+
+            log.debug("loaded security data with users count: " + userRepository.count());
+        }
+    }
+
+    private static Authority getAuthority(List<Authority> authorities, String authorityName) {
+        return authorities.stream().filter(a -> a.getRole().equals(authorityName)).findFirst().orElseThrow(() -> new RuntimeException("Authority not found: " +authorityName));
     }
 
     private void loadCustomerData() {
