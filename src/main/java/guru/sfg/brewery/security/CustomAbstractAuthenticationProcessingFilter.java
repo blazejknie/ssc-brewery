@@ -17,7 +17,6 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Optional;
 
 @Slf4j
 public abstract class CustomAbstractAuthenticationProcessingFilter extends AbstractAuthenticationProcessingFilter {
@@ -30,7 +29,7 @@ public abstract class CustomAbstractAuthenticationProcessingFilter extends Abstr
     public Authentication attemptAuthentication(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws AuthenticationException, IOException, ServletException {
         String username = getUsername(httpServletRequest);
         String password = getPassword(httpServletRequest);
-        log.debug("Authenticating User: " + username + "/" + password);
+        log.debug("Authenticating User: " + username);
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(username, password);
 
         if (!StringUtils.isEmpty(username)) {
@@ -56,7 +55,7 @@ public abstract class CustomAbstractAuthenticationProcessingFilter extends Abstr
                 chain.doFilter(request, response);
             }
         } catch (AuthenticationException e) {
-            log.error("Authentication Failed0", e);
+            log.error("Authentication Failed", e);
             unsuccessfulAuthentication(request, response, e);
         }
 

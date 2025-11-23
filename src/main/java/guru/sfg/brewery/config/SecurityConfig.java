@@ -19,6 +19,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
+
     public RestHeaderAuthFilter restHeaderAuthFilter(AuthenticationManager authenticationManager) {
         RestHeaderAuthFilter filter = new RestHeaderAuthFilter(new AntPathRequestMatcher("/api/**"));
         filter.setAuthenticationManager(authenticationManager);
@@ -30,6 +31,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         filter.setAuthenticationManager(authenticationManager);
         return filter;
     }
+
     @Bean
     PasswordEncoder passwordEncoder() {
 //        return NoOpPasswordEncoder.getInstance();
@@ -43,28 +45,30 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http
-                .addFilterBefore(
-                        restHeaderAuthFilter(authenticationManager()),
+        http.addFilterBefore(restHeaderAuthFilter(authenticationManager()),
                         UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(
-                        restURLParamsAuthFilter(authenticationManager()),
-                        RestHeaderAuthFilter.class)
-                .csrf().disable()
-                .authorizeRequests(authorized -> {
-                    authorized
-                            .antMatchers("/", "/webjars/**", "/login", "/resources/**")
-                            .permitAll();
+                .csrf().disable();
+
+        http.addFilterBefore(restURLParamsAuthFilter(authenticationManager()),
+                UsernamePasswordAuthenticationFilter.class);
+
+        http
+                .authorizeRequests(authorize -> {
+                    authorize
+                            .antMatchers("/h2-console/**").permitAll() //do not use in production!
+                            .antMatchers("/", "/webjars/**", "/login", "/resources/**").permitAll()
+                            .antMatchers("/beers/find", "/beers*").permitAll()
+                            .antMatchers(HttpMethod.GET, "/api/v1/beer/**").permitAll()
+                            .mvcMatchers(HttpMethod.GET, "/api/v1/beerUpc/{upc}").permitAll();
                 })
-                .authorizeRequests().antMatchers("/beers/find", "/beers*").permitAll()
-                .antMatchers(HttpMethod.GET, "/api/v1/beer/**").permitAll()
-                .mvcMatchers(HttpMethod.GET, "/api/v1/beerUpc/{upc}").permitAll()
-                .and()
                 .authorizeRequests()
                 .anyRequest().authenticated()
                 .and()
-                .formLogin().and()
-                .httpBasic();
+                .httpBasic()
+                .and()
+                .formLogin().defaultSuccessUrl("/");
+
+        http.headers().frameOptions().sameOrigin();
     }
 
 //    @Override
@@ -85,20 +89,20 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 //    }
 
 // {noop} is set for no encryption
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.inMemoryAuthentication()
-                .withUser("spring")
-                .password("{ldap}{SSHA}f/FvltG1KkJAGbFINvXvzyq/3UoguOb7oox5QA==")
-                .roles("ADMIN")
-                .and()
-                .withUser("user")
-                .password("{bcrypt10}$2a$10$HuROHgb7yjszurF8mcTwUOlykMDoRVyGNwW2DNtS3v4pixqmZwvri")
-//                .password("{SSHA}ycF5qsioBB5JqiWUzreuNYpLdpEHUI8Qv0cWJg==")
-                .roles("USER")
-                .and()
-                .withUser("scott")
-                .password("{sha256}e36f9e44f3acbe164886bc4ca6e549ad7edea83d6fdff25b3be95b9efffd053a43299d331c04fa81")
-                .roles("CUSTOMER");
-    }
+//    @Override
+//    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+//        auth.inMemoryAuthentication()
+//                .withUser("spring")
+//                .password("{ldap}{SSHA}f/FvltG1KkJAGbFINvXvzyq/3UoguOb7oox5QA==")
+//                .roles("ADMIN")
+//                .and()
+//                .withUser("user")
+//                .password("{bcrypt10}$2a$10$HuROHgb7yjszurF8mcTwUOlykMDoRVyGNwW2DNtS3v4pixqmZwvri")
+////                .password("{SSHA}ycF5qsioBB5JqiWUzreuNYpLdpEHUI8Qv0cWJg==")
+//                .roles("USER")
+//                .and()
+//                .withUser("scott")
+//                .password("{sha256}e36f9e44f3acbe164886bc4ca6e549ad7edea83d6fdff25b3be95b9efffd053a43299d331c04fa81")
+//                .roles("CUSTOMER");
+//    }
 }
