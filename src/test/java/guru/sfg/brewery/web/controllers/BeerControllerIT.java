@@ -13,11 +13,34 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class BeerControllerIT extends BaseIT{
 
     @Test
-    void findBeersWithoutLogin() throws Exception {
-        mockMvc.perform(get("/beers/find"))
+    void findBeersUNAUTHORIZED() throws Exception {
+        mockMvc.perform(get("/beers/find").with(anonymous()))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void findBeersADMIN() throws Exception {
+        mockMvc.perform(get("/beers/find")
+                        .with(httpBasic("spring", "guru")))
                 .andExpect(status().isOk())
                 .andExpect(view().name("beers/findBeers"))
                 .andExpect(model().attributeExists("beer"));
+    }
+
+    @Test
+    void findBeersUSER() throws Exception {
+        mockMvc.perform(get("/beers/find")
+                        .with(httpBasic("user", "password")))
+                .andExpect(status().isOk())
+                .andExpect(view().name("beers/findBeers"))
+                .andExpect(model().attributeExists("beer"));
+    }
+
+    @Test
+    void findBeersCUSTOMER() throws Exception {
+        mockMvc.perform(get("/beers/find")
+                        .with(httpBasic("scott", "tiger")))
+                .andExpect(status().isOk());
     }
 
     //creating "some_user" for our test
@@ -31,15 +54,25 @@ class BeerControllerIT extends BaseIT{
     }
 
     @Test
-    void initCreationFormWithAuth() throws Exception {
-        mockMvc.perform(get("/beers/new").with(httpBasic("user", "password")))
-                .andExpect(status().isOk())
-                .andExpect(view().name("beers/createBeer"))
-                .andExpect(model().attributeExists("beer"));
+    void findBeersWithAnonymous() throws Exception {
+        mockMvc.perform(get("/beers/find").with(anonymous()))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
-    void initCreationFormWithAuth2() throws Exception {
+    void findBeersWithHttpBadCredentials() throws Exception {
+        mockMvc.perform(get("/beers/find").with(httpBasic("foo", "bar")))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void initCreationFormUNAUTHORIZED() throws Exception {
+        mockMvc.perform(get("/beers/new"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void initCreationFormADMIN() throws Exception {
         mockMvc.perform(get("/beers/new").with(httpBasic("spring", "guru")))
                 .andExpect(status().isOk())
                 .andExpect(view().name("beers/createBeer"))
@@ -47,24 +80,33 @@ class BeerControllerIT extends BaseIT{
     }
 
     @Test
-    void initCreationFormWithAuth3() throws Exception {
-        mockMvc.perform(get("/beers/new").with(httpBasic("scott", "tiger")))
+    void initCreationFormUSER() throws Exception {
+        mockMvc.perform(get("/beers/new").with(httpBasic("user", "password")))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void initCreationFormCUSTOMER() throws Exception {
+        mockMvc.perform(get("/beers/new")
+                        .with(httpBasic("scott", "tiger")))
                 .andExpect(status().isOk())
                 .andExpect(view().name("beers/createBeer"))
                 .andExpect(model().attributeExists("beer"));
     }
 
     @Test
-    void findBeersWithAnonymous() throws Exception {
-        mockMvc.perform(get("/beers/find").with(anonymous()))
+    void initCreationFormWithAuth2() throws Exception {
+        mockMvc.perform(get("/beers/new")
+                        .with(httpBasic("spring", "guru")))
                 .andExpect(status().isOk())
-                .andExpect(view().name("beers/findBeers"))
+                .andExpect(view().name("beers/createBeer"))
                 .andExpect(model().attributeExists("beer"));
     }
 
     @Test
-    void findBeersWithHttpBasicFailed() throws Exception {
-        mockMvc.perform(get("/beers/find").with(httpBasic("foo", "bar")))
-                .andExpect(status().isUnauthorized());
+    void initCreationFormWithAuth3() throws Exception {
+        mockMvc.perform(get("/beers/new")
+                        .with(httpBasic("user", "password")))
+                .andExpect(status().isForbidden());
     }
 }
