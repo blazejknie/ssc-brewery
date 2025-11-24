@@ -2,7 +2,6 @@ package guru.sfg.brewery.security;
 
 import guru.sfg.brewery.domain.security.Authority;
 import guru.sfg.brewery.domain.security.User;
-import guru.sfg.brewery.repositories.security.AuthorityRepository;
 import guru.sfg.brewery.repositories.security.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,6 +42,6 @@ public class JpaUserDetailsService implements UserDetailsService {
     }
 
     private GrantedAuthority convertToSpringAuthority(Authority authority) {
-        return new SimpleGrantedAuthority(authority.getRole());
+        return new SimpleGrantedAuthority(authority.getPermission());
     }
 }
