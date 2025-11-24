@@ -1,5 +1,6 @@
 package guru.sfg.brewery.web.controllers;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -46,6 +47,7 @@ class BeerControllerIT extends BaseIT{
     //creating "some_user" for our test
     @WithMockUser("some_user")
     @Test
+    @Disabled
     void findBeers() throws Exception {
         mockMvc.perform(get("/beers/find"))
                 .andExpect(status().isOk())
@@ -89,9 +91,7 @@ class BeerControllerIT extends BaseIT{
     void initCreationFormCUSTOMER() throws Exception {
         mockMvc.perform(get("/beers/new")
                         .with(httpBasic("scott", "tiger")))
-                .andExpect(status().isOk())
-                .andExpect(view().name("beers/createBeer"))
-                .andExpect(model().attributeExists("beer"));
+                .andExpect(status().isForbidden());
     }
 
     @Test

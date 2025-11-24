@@ -23,7 +23,10 @@ public class BreweryControllerIT extends BaseIT {
     void testListBreweriesAdmin() throws Exception {
         mockMvc.perform(get("/brewery/breweries")
                 .with(httpBasic("spring", "guru")))
-                .andExpect(status().is2xxSuccessful());
+                .andExpect(status().is2xxSuccessful())
+                .andExpect(status().isOk())
+                .andExpect(view().name("breweries/index"))
+                .andExpect(model().attributeExists("breweries"));
     }
 
     @Test
