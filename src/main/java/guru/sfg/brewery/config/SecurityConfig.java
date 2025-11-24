@@ -12,7 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true)
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Bean
@@ -31,13 +31,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                             .mvcMatchers(HttpMethod.GET, "/api/v1/beerUpc/{upc}").hasAnyRole("ADMIN", "USER", "CUSTOMER")
                             .antMatchers("/beers/new").hasAnyRole("ADMIN", "CUSTOMER")
                             .antMatchers("/beers/find", "/beers*").hasAnyRole("ADMIN", "USER", "CUSTOMER")
-                            .mvcMatchers(HttpMethod.DELETE, "/api/v1/beer/**").hasRole("ADMIN")
                             .mvcMatchers(HttpMethod.GET, "/api/v1/beer/**").hasAnyRole("ADMIN", "USER", "CUSTOMER")
                             .mvcMatchers(HttpMethod.GET, "/api/v1/beerUpc/**").hasAnyRole("ADMIN", "USER", "CUSTOMER")
-//                            .mvcMatchers(HttpMethod.GET, "/customers/new").hasRole("ADMIN")
-//                            .mvcMatchers(HttpMethod.POST, "/customers/new").hasRole("ADMIN")
-//                            .mvcMatchers(HttpMethod.GET, "/customers/{customerId}", "/customers/find", "/customers")
-//                                .hasAnyRole("ADMIN", "CUSTOMER")
                             .mvcMatchers("/brewery/breweries")
                                 .hasAnyRole("ADMIN", "CUSTOMER")
                             .mvcMatchers(HttpMethod.GET, "/brewery/api/v1/breweries")
