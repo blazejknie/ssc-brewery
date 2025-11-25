@@ -8,12 +8,12 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.UUID;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.anonymous;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -160,16 +160,20 @@ public class CustomerControllerIT extends BaseIT {
                 .andExpect(status().isForbidden());
     }
 
+    @Rollback
     @Test
     void testProcessCreationFormAnonymous() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.post("/customers/new")
+                        .with(csrf())
                         .with(anonymous()))
                 .andExpect(status().isUnauthorized());
     }
 
+    @Rollback
     @Test
     void testProcessCreationFormAdmin() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.post("/customers/new")
+                        .with(csrf())
                         .with(httpBasic("spring", "guru")))
                 .andExpect(status().is3xxRedirection());
     }
