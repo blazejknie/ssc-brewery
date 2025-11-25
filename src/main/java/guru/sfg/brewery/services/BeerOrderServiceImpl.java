@@ -30,8 +30,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -66,6 +68,19 @@ public class BeerOrderServiceImpl implements BeerOrderService {
         }
     }
 
+    @Override
+    public BeerOrderPagedList listOrders(Pageable pageable) {
+        Page<BeerOrder> beerOrderPage = beerOrderRepository.findAll(pageable);
+
+        return new BeerOrderPagedList(beerOrderPage
+                .stream()
+                .map(beerOrderMapper::beerOrderToDto)
+                .collect(Collectors.toList()), PageRequest.of(
+                beerOrderPage.getPageable().getPageNumber(),
+                beerOrderPage.getPageable().getPageSize()),
+                beerOrderPage.getTotalElements());
+    }
+
     @Transactional
     @Override
     public BeerOrderDto placeOrder(UUID customerId, BeerOrderDto beerOrderDto) {
@@ -92,6 +107,15 @@ public class BeerOrderServiceImpl implements BeerOrderService {
     @Override
     public BeerOrderDto getOrderById(UUID customerId, UUID orderId) {
         return beerOrderMapper.beerOrderToDto(getOrder(customerId, orderId));
+    }
+
+    @Override
+    public BeerOrderDto getOrderById(UUID orderId) {
+        BeerOrderDto orderDto = beerOrderRepository.findOrderByIdSecure(orderId)
+                .map(beerOrderMapper::beerOrderToDto)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order Not Found"));
+        log.debug("Found Order: " + orderDto);
+        return orderDto;
     }
 
     @Override
