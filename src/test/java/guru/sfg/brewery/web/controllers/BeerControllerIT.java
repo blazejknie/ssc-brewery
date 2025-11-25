@@ -4,10 +4,11 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.annotation.Rollback;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.anonymous;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -107,6 +108,42 @@ class BeerControllerIT extends BaseIT{
     void initCreationFormWithAuth3() throws Exception {
         mockMvc.perform(get("/beers/new")
                         .with(httpBasic("user", "password")))
+                .andExpect(status().isForbidden());
+    }
+
+    @Rollback
+    @Test
+    void testProcessCreationFormAnonymous() throws Exception {
+        mockMvc.perform(post("/beers/new")
+                .with(csrf())
+                .with(anonymous()))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Rollback
+    @Test
+    void testProcessCreationFormAdmin() throws Exception {
+        mockMvc.perform(post("/beers/new")
+                        .with(csrf())
+                        .with(httpBasic("spring", "guru")))
+                .andExpect(status().is3xxRedirection());
+    }
+
+    @Rollback
+    @Test
+    void testProcessCreationFormCustomer() throws Exception {
+        mockMvc.perform(post("/beers/new")
+                        .with(csrf())
+                        .with(httpBasic("scott", "tiger")))
+                .andExpect(status().isForbidden());
+    }
+
+    @Rollback
+    @Test
+    void testProcessCreationFormUser() throws Exception {
+        mockMvc.perform(post("/beers/new")
+                .with(csrf())
+                .with(httpBasic("user", "password")))
                 .andExpect(status().isForbidden());
     }
 }
