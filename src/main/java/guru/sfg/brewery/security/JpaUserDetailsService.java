@@ -26,22 +26,7 @@ public class JpaUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         log.debug("Getting User info via JPA");
-        User user = userRepository.findByUsername(username).orElseThrow(() ->
+        return userRepository.findByUsername(username).orElseThrow(() ->
                 new UsernameNotFoundException("User name: " + username + " not found"));
-        return new org.springframework.security.core.userdetails.User(
-                user.getUsername(),
-                user.getPassword(),
-                user.getEnabled(),
-                user.getAccountNonExpired(),
-                user.getCredentialsNonExpired(),
-                user.getAccountNonLocked(),
-                user.getAuthorities().stream()
-                        .map(this::convertToSpringAuthority)
-                        .collect(Collectors.toSet())
-        );
-    }
-
-    private GrantedAuthority convertToSpringAuthority(Authority authority) {
-        return new SimpleGrantedAuthority(authority.getPermission());
     }
 }
