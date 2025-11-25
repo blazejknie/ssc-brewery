@@ -50,7 +50,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .logout(logoutConfigurer -> {
                     logoutConfigurer
                             .logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET"))
-                            .logoutSuccessUrl("/").permitAll();
+                            .logoutSuccessUrl("/?logout").permitAll();
                 })
                 .csrf().ignoringAntMatchers("/h2-console/**", "/api/**");
 
