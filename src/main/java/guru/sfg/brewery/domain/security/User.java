@@ -54,7 +54,7 @@ public class User implements UserDetails, CredentialsContainer {
 
     @Override
     public boolean isAccountNonLocked() {
-        return this.getAccountNonLocked();
+        return this.accountNonLocked;
     }
 
     @Override
@@ -80,12 +80,12 @@ public class User implements UserDetails, CredentialsContainer {
     private Boolean enabled = true;
 
     @Builder.Default
-    private Boolean usrGoogle2fa = false;
+    private Boolean useGoogle2f = false;
 
     private String google2FaSecret;
 
     @Transient
-    private Boolean google2FaRequired = false;
+    private Boolean google2faRequired = true;
 
     @CreationTimestamp
     @Column(updatable = false)
