@@ -20,9 +20,7 @@ public class AuthenticationSuccessListener {
 
     @EventListener
     public void listen(AuthenticationSuccessEvent event) {
-        User principal = (User) event.getAuthentication().getPrincipal();
 
-        log.debug("User name logged in: " + principal.getUsername());
         log.debug("User Logged In OK");
 
         if (event.getSource() instanceof UsernamePasswordAuthenticationToken) {
