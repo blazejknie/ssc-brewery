@@ -18,10 +18,18 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class UserController {
 
     private final UserRepository userRepository;
+    private final GoogleAuthenticator googleAuthenticator;
 
     @GetMapping("/register2Fa")
     public String register2Fa(Model model) {
-        model.addAttribute("googleurl", "todo");
+        User user = getUserFromSecurityContext();
+
+        String url = GoogleAuthenticatorQRGenerator.getOtpAuthURL("Blazej App",
+                user.getUsername(), googleAuthenticator.createCredentials(user.getUsername()));
+
+        log.debug("Google QR URL: " + url);
+
+        model.addAttribute("googleurl", url);
 
         return "user/register2fa";
     }
@@ -30,5 +38,9 @@ public class UserController {
     public String confirm2Fa(@RequestParam Integer verifyCode) {
 
         return "index";
+    }
+
+    private static User getUserFromSecurityContext() {
+        return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 }
